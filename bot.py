@@ -229,7 +229,7 @@ def feed(update, context):
 
 def donate(update, context):
     user = update.message.from_user
-    bot.send_message(chat_id=update.message.chat_id, text=f"Hey{user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
+    bot.send_message(chat_id=update.message.chat_id, text=f"Hey {user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
 
 
 def main():
