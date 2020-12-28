@@ -21,8 +21,16 @@ bot = Bot(token=bot_token)
 
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id,
-                             text="Instagram Media Downloader Bot.\nPlease join @MBNUpdates & the Support Chat.\nRead /help before using.", parse_mode=telegram.ParseMode.HTML)
+    user = update.message.from_user
+    chat_member = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    status = chat_member["status"]
+    if(status == 'left'):
+        context.bot.send_message(chat_id=update.message.chat_id,text=f"Hi {user.first_name}, I'm Instagram Media Downloader Bot. To use me you have to be a member of @MBNUpdates in order to stay updated with the latest developments.\nPlease /start again after joining.")
+        return
+    else :
+        context.bot.send_message(chat_id=update.message.chat_id,
+                             text=f"Hi {user.first_name}!\nI'm Instagram Media Downloader Bot.\nPlease read the /help before using me.", parse_mode=telegram.ParseMode.HTML)
+
 
 
 def help(update, context):
@@ -31,7 +39,7 @@ def help(update, context):
 
 def about(update, context):
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text='''This bot can help you to download media from Instagram without leaving Telegram.\nMade with ❤️ + python-telegram-bot\nSource Code : <a href="https://github.com/NandiyaLive/xIGDLBot">GitHub</a>''', parse_mode=telegram.ParseMode.HTML)
+                             text='''I can help you to download media from Instagram without leaving Telegram.\nSource Code : <a href="https://github.com/NandiyaLive/xIGDLBot">GitHub</a>\n\nMade with ❤️ + python-telegram-bot by @NandiyaLive''', parse_mode=telegram.ParseMode.HTML)
 
 
 def echo(update, context):
@@ -39,159 +47,180 @@ def echo(update, context):
 
 
 def stories(update, context):
-    status_page = "https://www.insta-stories.com/en/status"
+    user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    status = user["status"]
+    if(status == 'left'):
+        context.bot.send_message(chat_id=update.message.chat_id,text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+        return
+    else :
+        status_page = "https://www.insta-stories.com/en/status"
 
-    req_status = requests.get(status_page).text
-    status = bs(req_status, "lxml")
+        req_status = requests.get(status_page).text
+        status = bs(req_status, "lxml")
 
-    if status.find("div", class_="status status--ok"):
+        if status.find("div", class_="status status--ok"):
+            fullmsg = update.message.text
+
+            if fullmsg == "/stories":
+                update.message.reply_text(
+                    '/stories [instagram username]\nPlease read /help')
+            else:
+                msg = fullmsg.replace("/stories ", "")
+
+                if "@" in msg.lower():
+                    query = msg.replace("@", "")
+                else:
+                    query = msg
+
+                url = f"https://www.insta-stories.com/en/stories/{query}"
+                r = requests.get(url).text
+
+                soup = bs(r, "lxml")
+
+                if soup.find("div", class_="msg msg-user-not-found"):
+                    update.message.reply_text(
+                        "This username doesn't exist. Please try with another one.")
+
+                else:
+                    if soup.find("div", class_="msg msg-no-stories"):
+                        update.message.reply_text(
+                            "No stories available. Please try again later.")
+
+                    else:
+                        try:
+                            profile = soup.find("div", class_="user-name").text
+                            update.message.reply_text(
+                                f"Downloading stories of {profile}")
+
+                            videos = soup.findAll(class_='story-video')
+                            photos = soup.findAll(class_='story-image')
+
+                            for video in videos:
+                                context.bot.send_video(
+                                    chat_id=update.message.chat_id, video=video['src'])
+
+                            for photo in photos:
+                                context.bot.send_photo(
+                                    chat_id=update.message.chat_id, photo=photo['src'])
+                        except:
+                            context.bot.send_message(chat_id=update.message.chat_id,
+                                                    text="Something went wrong. Please try again later.", parse_mode=telegram.ParseMode.HTML)
+
+        else:
+            update.message.reply_text(
+                "API is not working. Please try again later.")
+
+
+def igtv(update, context):
+    user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    status = user["status"]
+    if(status == 'left'):
+        context.bot.send_message(chat_id=update.message.chat_id,text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+        return
+    else :
         fullmsg = update.message.text
 
-        if fullmsg == "/stories":
+        if fullmsg == "/igtv":
             update.message.reply_text(
-                '/stories [instagram username]\nPlease read /help')
+                '/igtv [instagram username]\nPlease read /help')
         else:
-            msg = fullmsg.replace("/stories ", "")
+            msg = fullmsg.replace("/igtv ", "")
 
             if "@" in msg.lower():
                 query = msg.replace("@", "")
             else:
                 query = msg
 
-            url = f"https://www.insta-stories.com/en/stories/{query}"
-            r = requests.get(url).text
+        L = Instaloader(dirname_pattern=query, download_comments=False,
+                        download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
 
-            soup = bs(r, "lxml")
+        profile = Profile.from_username(L.context, query)
 
-            if soup.find("div", class_="msg msg-user-not-found"):
-                update.message.reply_text(
-                    "This username doesn't exist. Please try with another one.")
+        igtv_count = profile.igtvcount
 
-            else:
-                if soup.find("div", class_="msg msg-no-stories"):
-                    update.message.reply_text(
-                        "No stories available. Please try again later.")
+        posts = profile.get_igtv_posts()
 
-                else:
-                    try:
-                        profile = soup.find("div", class_="user-name").text
-                        update.message.reply_text(
-                            f"Downloading stories of {profile}")
+        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(igtv_count) +
+                                    "\nThis may take longer, take a nap I can handle this without you.")
 
-                        videos = soup.findAll(class_='story-video')
-                        photos = soup.findAll(class_='story-image')
+        try:
+            L.posts_download_loop(posts, query)
+        except Exception as e:
+            context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR</b>\n"+str(
+                e), parse_mode=telegram.ParseMode.HTML)
+            return
 
-                        for video in videos:
-                            context.bot.send_video(
-                                chat_id=update.message.chat_id, video=video['src'])
+        src_dir = query
 
-                        for photo in photos:
-                            context.bot.send_photo(
-                                chat_id=update.message.chat_id, photo=photo['src'])
-                    except:
-                        context.bot.send_message(chat_id=update.message.chat_id,
-                                                 text="Something went wrong. Please try again later.", parse_mode=telegram.ParseMode.HTML)
+        for vidfile in glob.iglob(os.path.join(src_dir, "*.mp4")):
+            context.bot.send_video(
+                chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
 
-    else:
-        update.message.reply_text(
-            "API is not working. Please try again later.")
-
-
-def igtv(update, context):
-    fullmsg = update.message.text
-
-    if fullmsg == "/igtv":
-        update.message.reply_text(
-            '/igtv [instagram username]\nPlease read /help')
-    else:
-        msg = fullmsg.replace("/igtv ", "")
-
-        if "@" in msg.lower():
-            query = msg.replace("@", "")
-        else:
-            query = msg
-
-    L = Instaloader(dirname_pattern=query, download_comments=False,
-                    download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
-
-    profile = Profile.from_username(L.context, query)
-
-    igtv_count = profile.igtvcount
-
-    posts = profile.get_igtv_posts()
-
-    update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(igtv_count) +
-                              "\nThis may take longer, take a nap I can handle this without you.")
-
-    try:
-        L.posts_download_loop(posts, query)
-    except Exception as e:
-        context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR ò_ô</b>\n"+str(
-            e), parse_mode=telegram.ParseMode.HTML)
-        return
-
-    src_dir = query
-
-    for vidfile in glob.iglob(os.path.join(src_dir, "*.mp4")):
-        context.bot.send_video(
-            chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
-
-    try:
-        shutil.rmtree(query)
-    except Exception:
-        pass
+        try:
+            shutil.rmtree(query)
+        except Exception:
+            pass
 
 
 def feed(update, context):
-    fullmsg = update.message.text
+    context.bot.send_message(chat_id=update.message.chat_id,text="This feature is still under development. Please use @MBNBetaBot if you like to beta test this feature.")
+    
 
-    if fullmsg == "/feed":
-        update.message.reply_text(
-            '/feed [instagram username]\nPlease read /help')
-    else:
-        msg = fullmsg.replace("/feed ", "")
+    # user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    # status = user["status"]
+    # if(status == 'left'):
+    #     context.bot.send_message(chat_id=update.message.chat_id,text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+    #     return
+    # else :
+    #     fullmsg = update.message.text
 
-        if "@" in msg.lower():
-            query = msg.replace("@", "")
-        else:
-            query = msg
+    #     if fullmsg == "/feed":
+    #         update.message.reply_text(
+    #             '/feed [instagram username]\nPlease read /help')
+    #     else:
+    #         msg = fullmsg.replace("/feed ", "")
 
-    L = Instaloader(dirname_pattern=query, download_comments=False,
-                    download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
-    profile = Profile.from_username(L.context, query)
+    #         if "@" in msg.lower():
+    #             query = msg.replace("@", "")
+    #         else:
+    #             query = msg
 
-    media = profile.mediacount
-    update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nMedia Count : " + str(media) +
-                              "\nThis may take longer, take a nap I can handle this without you.")
+    #     L = Instaloader(dirname_pattern=query, download_comments=False,
+    #                     download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
+    #     profile = Profile.from_username(L.context, query)
 
-    posts = profile.get_posts()
-    try:
-        L.posts_download_loop(posts, query)
-    except Exception as e:
-        context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR\n"+str(
-            e), parse_mode=telegram.ParseMode.HTML)
-        return
+    #     media = profile.mediacount
+    #     update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nMedia Count : " + str(media) +
+    #                             "\nThis may take longer, take a nap I can handle this without you.")
 
-    update.message.reply_text("Download Completed.\n🗄 Archiving files...")
+    #     posts = profile.get_posts()
+    #     try:
+    #         L.posts_download_loop(posts, query)
+    #     except Exception as e:
+    #         context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR\n"+str(
+    #             e), parse_mode=telegram.ParseMode.HTML)
+    #         return
 
-    zf = zipfile.ZipFile(f"{query}.zip", "w")
-    for dirname, subdirs, files in os.walk(query):
-        zf.write(query)
-        for filename in files:
-            zf.write(os.path.join(dirname, filename))
-    zf.close()
+    #     update.message.reply_text("Download Completed.\n🗄 Archiving files...")
 
-    update.message.reply_text("Uploading to Telegram...")
+    #     zf = zipfile.ZipFile(f"{query}.zip", "w")
+    #     for dirname, subdirs, files in os.walk(query):
+    #         zf.write(query)
+    #         for filename in files:
+    #             zf.write(os.path.join(dirname, filename))
+    #     zf.close()
 
-    for zip_file in glob.glob("*.zip"):
-        context.bot.send_document(chat_id=update.message.chat_id,
-                                  document=open(zip_file, 'rb'))
+    #     update.message.reply_text("Uploading to Telegram...")
 
-    try:
-        shutil.rmtree(query)
-        os.remove(f"{query}.zip")
-    except Exception:
-        pass
+    #     for zip_file in glob.glob("*.zip"):
+    #         context.bot.send_document(chat_id=update.message.chat_id,
+    #                                 document=open(zip_file, 'rb'))
+
+    #     try:
+    #         shutil.rmtree(query)
+    #         os.remove(f"{query}.zip")
+    #     except Exception:
+    #         pass
 
 
 def main():
