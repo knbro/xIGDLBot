@@ -89,8 +89,7 @@ def stories(update, context):
                     else:
                         try:
                             profile = soup.find("div", class_="user-name").text
-                            update.message.reply_text(
-                                f"Downloading stories of {profile}")
+                            update.message.reply_text(f"Downloading stories of {profile}")
 
                             videos = soup.findAll(class_='story-video')
                             photos = soup.findAll(class_='story-image')
@@ -102,6 +101,9 @@ def stories(update, context):
                             for photo in photos:
                                 context.bot.send_photo(
                                     chat_id=update.message.chat_id, photo=photo['src'])
+
+                            bot.send_message(text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
+                        
                         except:
                             context.bot.send_message(chat_id=update.message.chat_id,
                                                     text="Something went wrong. Please try again later.", parse_mode=telegram.ParseMode.HTML)
@@ -140,9 +142,9 @@ def igtv(update, context):
 
         posts = profile.get_igtv_posts()
 
-        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(igtv_count) +
-                                    "\nThis may take longer, take a nap I can handle this without you.")
+        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(igtv_count) + "\nThis may take longer, take a nap I can handle this without you.")
 
+                       
         try:
             L.posts_download_loop(posts, query)
         except Exception as e:
@@ -156,6 +158,8 @@ def igtv(update, context):
             context.bot.send_video(
                 chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
 
+        bot.send_message(text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
+
         try:
             shutil.rmtree(query)
         except Exception:
@@ -163,7 +167,7 @@ def igtv(update, context):
 
 
 def feed(update, context):
-    context.bot.send_message(chat_id=update.message.chat_id,text="This feature is still under development. Please use @MBNBetaBot if you like to beta test this feature.")
+    bot.send_message(chat_id=update.message.chat_id,text="This feature is still under development. Please use @MBNBetaBot if you like to beta test this feature.")
     
 
     # user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
@@ -223,6 +227,11 @@ def feed(update, context):
     #         pass
 
 
+def donate(update, context):
+    user = update.message.from_user
+    bot.send_message(chat_id=update.message.chat_id, text=f"Hey{user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
+
+
 def main():
     updater = Updater(bot_token, use_context=True)
 
@@ -234,6 +243,7 @@ def main():
     dp.add_handler(CommandHandler("about", about, run_async=True))
     dp.add_handler(CommandHandler("igtv", igtv, run_async=True))
     dp.add_handler(CommandHandler("feed", feed, run_async=True))
+    dp.add_handler(CommandHandler("donate", donate, run_async=True))
 
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
