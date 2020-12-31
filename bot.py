@@ -42,7 +42,7 @@ def help(update, context):
 
 
 def about(update, context):
-    keyboard = [InlineKeyboardButton("Source Code", url="https://github.com/NandiyaLive/xIGDLBot")]
+    keyboard = [[InlineKeyboardButton("Source Code", url="https://github.com/NandiyaLive/xIGDLBot")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.message.chat_id,
                              text='''I can help you to download media from any public instagram account without leaving Telegram.\n\nMade with ❤️ + python-telegram-bot by @NandiyaLive''', parse_mode=telegram.ParseMode.HTML, reply_markup=reply_markup)
