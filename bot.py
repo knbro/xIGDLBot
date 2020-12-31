@@ -7,7 +7,7 @@ import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, run_async
 import requests
 from bs4 import BeautifulSoup as bs
-from telegram import Bot
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from instaloader import Instaloader, Profile, Post
 import sys
 import shutil
@@ -19,27 +19,33 @@ import pathlib
 bot_token = ""
 bot = Bot(token=bot_token)
 
+help_keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"), InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
+help_reply_markup = InlineKeyboardMarkup(help_keyboard)
 
 def start(update, context):
     user = update.message.from_user
     chat_member = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
     status = chat_member["status"]
     if(status == 'left'):
-        context.bot.send_message(chat_id=update.message.chat_id,text=f"Hi {user.first_name}, I'm Instagram Media Downloader Bot. To use me you have to be a member of @MBNUpdates in order to stay updated with the latest developments.\nPlease /start again after joining.")
+        context.bot.send_message(chat_id=update.message.chat_id,text=f"Hi {user.first_name}, to use me you have to be a member of the updates channel in order to stay updated with the latest developments.\nPlease click below button to join and /start the bot again.", reply_markup=help_reply_markup)
         return
     else :
         context.bot.send_message(chat_id=update.message.chat_id,
-                             text=f"Hi {user.first_name}!\nI'm Instagram Media Downloader Bot.\nPlease read the /help before using me.", parse_mode=telegram.ParseMode.HTML)
-
+                             text=f"Hi {user.first_name}!\nI'm Instagram Media Downloader Bot. I can help you to download Stories and IGTV Videos from any public instagram account.\nPlease read the /help before using me.", parse_mode=telegram.ParseMode.HTML, reply_markup=help_reply_markup)
 
 
 def help(update, context):
-    update.message.reply_text('''/stories username - Download stories from the username’s profile.\n/igtv username - Download IGTV videos from the username’s profile.\n/feed username - Download all posts from the username’s profile as a zip file.\n\n<b>How to find the username?</b>\nOpen Instagram app & then go to a profile that you want to download items. Username must be on the top.\nIn case you are using a browser you can find it in the Address bar.\n<b>Example : </b>Username for instagram.com/rashmika_mandanna & @rashmika_mandanna is 'rashmika_mandanna' 😉''', parse_mode=telegram.ParseMode.HTML)
+    keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"), InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text('''<b>Usage:</b>\n/stories username - Download stories from the username’s profile.\n/igtv username - Download IGTV videos from the username’s profile.\n/feed username - Download all posts from the username’s profile as a zip file.\n\n<b>How to find the username?</b>\nOpen Instagram app & then go to a profile that you want to download items. Username must be on the top.\nIn case you are using a browser you can find it in the Address bar.\n<b>Example : </b>Username for instagram.com/rashmika_mandanna & @rashmika_mandanna is 'rashmika_mandanna' 😉''', parse_mode=telegram.ParseMode.HTML, reply_markup=reply_markup)
 
 
 def about(update, context):
+    keyboard = [InlineKeyboardButton("Source Code", url="https://github.com/NandiyaLive/xIGDLBot")]
+    reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.message.chat_id,
-                             text='''I can help you to download media from Instagram without leaving Telegram.\nSource Code : <a href="https://github.com/NandiyaLive/xIGDLBot">GitHub</a>\n\nMade with ❤️ + python-telegram-bot by @NandiyaLive''', parse_mode=telegram.ParseMode.HTML)
+                             text='''I can help you to download media from any public instagram account without leaving Telegram.\n\nMade with ❤️ + python-telegram-bot by @NandiyaLive''', parse_mode=telegram.ParseMode.HTML, reply_markup=reply_markup)
 
 
 def echo(update, context):
@@ -229,7 +235,7 @@ def feed(update, context):
 
 def donate(update, context):
     user = update.message.from_user
-    bot.send_message(chat_id=update.message.chat_id, text=f"Hey {user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
+    bot.send_message(chat_id=update.message.chat_id, text=f"Hey{user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
 
 
 def main():
