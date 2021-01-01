@@ -16,49 +16,58 @@ import os
 import zipfile
 import pathlib
 
-bot_token = ""
+bot_token = "1290227041:AAF5zaIfRVd0Rxgk_VupWbXWCPOzmL5t694"
 bot = Bot(token=bot_token)
 
-help_keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"), InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
+help_keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"),
+                  InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
 help_reply_markup = InlineKeyboardMarkup(help_keyboard)
+
 
 def start(update, context):
     user = update.message.from_user
-    chat_member = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    chat_member = context.bot.get_chat_member(
+        chat_id='-1001225141087', user_id=update.message.chat_id)
     status = chat_member["status"]
     if(status == 'left'):
-        context.bot.send_message(chat_id=update.message.chat_id,text=f"Hi {user.first_name}, to use me you have to be a member of the updates channel in order to stay updated with the latest developments.\nPlease click below button to join and /start the bot again.", reply_markup=help_reply_markup)
-        return
-    else :
         context.bot.send_message(chat_id=update.message.chat_id,
-                             text=f"Hi {user.first_name}!\nI'm Instagram Media Downloader Bot. I can help you to download Stories and IGTV Videos from any public instagram account.\nPlease read the /help before using me.", parse_mode=telegram.ParseMode.HTML, reply_markup=help_reply_markup)
+                                 text=f"Hi {user.first_name}, to use me you have to be a member of the updates channel in order to stay updated with the latest developments.\nPlease click below button to join and /start the bot again.", reply_markup=help_reply_markup)
+        return
+    else:
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text=f"Hi {user.first_name}!\nI'm Instagram Media Downloader Bot. I can help you to download Stories and IGTV Videos from any public instagram account.\nPlease read the /help before using me.", parse_mode=telegram.ParseMode.HTML, reply_markup=help_reply_markup)
 
 
 def help(update, context):
-    keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"), InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
+    keyboard = [[InlineKeyboardButton("Updates Channel", url="https://t.me/MBNUpdates"),
+                 InlineKeyboardButton("Support Chat", url="https://t.me/MBNChat")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text('''<b>Usage:</b>\n/stories username - Download stories from the username’s profile.\n/igtv username - Download IGTV videos from the username’s profile.\n/feed username - Download all posts from the username’s profile as a zip file.\n\n<b>How to find the username?</b>\nOpen Instagram app & then go to a profile that you want to download items. Username must be on the top.\nIn case you are using a browser you can find it in the Address bar.\n<b>Example : </b>Username for instagram.com/rashmika_mandanna & @rashmika_mandanna is 'rashmika_mandanna' 😉''', parse_mode=telegram.ParseMode.HTML, reply_markup=reply_markup)
 
 
 def about(update, context):
-    keyboard = [[InlineKeyboardButton("Source Code", url="https://github.com/NandiyaLive/xIGDLBot")]]
+    keyboard = [[InlineKeyboardButton(
+        "Source Code", url="https://github.com/NandiyaLive/xIGDLBot")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.message.chat_id,
                              text='''I can help you to download media from any public instagram account without leaving Telegram.\n\nMade with ❤️ + python-telegram-bot by @NandiyaLive''', parse_mode=telegram.ParseMode.HTML, reply_markup=reply_markup)
 
 
 def echo(update, context):
-    update.message.reply_text('Please read /help')
+    context.bot.send_message(
+        chat_id=update.message.chat_id, text='''Please read /help''')
 
 
 def stories(update, context):
-    user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    user = context.bot.get_chat_member(
+        chat_id='-1001225141087', user_id=update.message.chat_id)
     status = user["status"]
     if(status == 'left'):
-        context.bot.send_message(chat_id=update.message.chat_id,text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
         return
-    else :
+    else:
         status_page = "https://www.insta-stories.com/en/status"
 
         req_status = requests.get(status_page).text
@@ -87,6 +96,10 @@ def stories(update, context):
                     update.message.reply_text(
                         "This username doesn't exist. Please try with another one.")
 
+                elif soup.find("div", class_="error"):
+                    update.message.reply_text(
+                        "API Error 🤒\nPlease try again later.")
+
                 else:
                     if soup.find("div", class_="msg msg-no-stories"):
                         update.message.reply_text(
@@ -95,7 +108,8 @@ def stories(update, context):
                     else:
                         try:
                             profile = soup.find("div", class_="user-name").text
-                            update.message.reply_text(f"Downloading stories of {profile}")
+                            update.message.reply_text(
+                                f"Downloading stories of {profile}")
 
                             videos = soup.findAll(class_='story-video')
                             photos = soup.findAll(class_='story-image')
@@ -108,11 +122,12 @@ def stories(update, context):
                                 context.bot.send_photo(
                                     chat_id=update.message.chat_id, photo=photo['src'])
 
-                            bot.send_message(text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
-                        
+                            bot.send_message(
+                                text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
+
                         except:
                             context.bot.send_message(chat_id=update.message.chat_id,
-                                                    text="Something went wrong. Please try again later.", parse_mode=telegram.ParseMode.HTML)
+                                                     text="Something went wrong. Please try again later.", parse_mode=telegram.ParseMode.HTML)
 
         else:
             update.message.reply_text(
@@ -120,12 +135,14 @@ def stories(update, context):
 
 
 def igtv(update, context):
-    user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
+    user = context.bot.get_chat_member(
+        chat_id='-1001225141087', user_id=update.message.chat_id)
     status = user["status"]
     if(status == 'left'):
-        context.bot.send_message(chat_id=update.message.chat_id,text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+        context.bot.send_message(chat_id=update.message.chat_id,
+                                 text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
         return
-    else :
+    else:
         fullmsg = update.message.text
 
         if fullmsg == "/igtv":
@@ -148,9 +165,9 @@ def igtv(update, context):
 
         posts = profile.get_igtv_posts()
 
-        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(igtv_count) + "\nThis may take longer, take a nap I can handle this without you.")
+        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(
+            igtv_count) + "\nThis may take longer, take a nap I can handle this without you.")
 
-                       
         try:
             L.posts_download_loop(posts, query)
         except Exception as e:
@@ -164,7 +181,8 @@ def igtv(update, context):
             context.bot.send_video(
                 chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
 
-        bot.send_message(text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
+        bot.send_message(
+            text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
 
         try:
             shutil.rmtree(query)
@@ -173,8 +191,8 @@ def igtv(update, context):
 
 
 def feed(update, context):
-    bot.send_message(chat_id=update.message.chat_id,text="This feature is still under development. Please use @MBNBetaBot if you like to beta test this feature.")
-    
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="This feature is still under development. Please use @MBNBetaBot if you like to beta test this feature.")
 
     # user = context.bot.get_chat_member(chat_id='-1001225141087', user_id=update.message.chat_id)
     # status = user["status"]
@@ -235,7 +253,8 @@ def feed(update, context):
 
 def donate(update, context):
     user = update.message.from_user
-    bot.send_message(chat_id=update.message.chat_id, text=f"Hey{user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=f"Hey{user.first_name}! \nThanks for showing interest in my works\nPlease contact @NandiyaLive for more info. You can send any amount you wish to donate me.")
 
 
 def main():
