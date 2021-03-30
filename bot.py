@@ -8,7 +8,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, run_a
 import requests
 from bs4 import BeautifulSoup as bs
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
-from instaloader import Instaloader, Profile, Post
+# from instaloader import Instaloader, Profile, Post
 import sys
 import shutil
 import glob
@@ -134,60 +134,60 @@ def stories(update, context):
                 "API is not working. Please try again later.")
 
 
-def igtv(update, context):
-    user = context.bot.get_chat_member(
-        chat_id='-1001225141087', user_id=update.message.chat_id)
-    status = user["status"]
-    if(status == 'left'):
-        context.bot.send_message(chat_id=update.message.chat_id,
-                                 text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
-        return
-    else:
-        fullmsg = update.message.text
+# def igtv(update, context):
+#     user = context.bot.get_chat_member(
+#         chat_id='-1001225141087', user_id=update.message.chat_id)
+#     status = user["status"]
+#     if(status == 'left'):
+#         context.bot.send_message(chat_id=update.message.chat_id,
+#                                  text="To use to bot you need to be a member of @MBNUpdates in order to stay updated with the latest developments.")
+#         return
+#     else:
+#         fullmsg = update.message.text
 
-        if fullmsg == "/igtv":
-            update.message.reply_text(
-                '/igtv [instagram username]\nPlease read /help')
-        else:
-            msg = fullmsg.replace("/igtv ", "")
+#         if fullmsg == "/igtv":
+#             update.message.reply_text(
+#                 '/igtv [instagram username]\nPlease read /help')
+#         else:
+#             msg = fullmsg.replace("/igtv ", "")
 
-            if "@" in msg.lower():
-                query = msg.replace("@", "")
-            else:
-                query = msg
+#             if "@" in msg.lower():
+#                 query = msg.replace("@", "")
+#             else:
+#                 query = msg
 
-        L = Instaloader(dirname_pattern=query, download_comments=False,
-                        download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
+#         L = Instaloader(dirname_pattern=query, download_comments=False,
+#                         download_video_thumbnails=False, save_metadata=False, download_geotags=True, compress_json=True, post_metadata_txt_pattern=None, storyitem_metadata_txt_pattern=None)
 
-        profile = Profile.from_username(L.context, query)
+#         profile = Profile.from_username(L.context, query)
 
-        igtv_count = profile.igtvcount
+#         igtv_count = profile.igtvcount
 
-        posts = profile.get_igtv_posts()
+#         posts = profile.get_igtv_posts()
 
-        update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(
-            igtv_count) + "\nThis may take longer, take a nap I can handle this without you.")
+#         update.message.reply_text("Cooking your request 👨‍🍳\nProfile : " + query + "\nIGTV Video Count : " + str(
+#             igtv_count) + "\nThis may take longer, take a nap I can handle this without you.")
 
-        try:
-            L.posts_download_loop(posts, query)
-        except Exception as e:
-            context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR</b>\n"+str(
-                e), parse_mode=telegram.ParseMode.HTML)
-            return
+#         try:
+#             L.posts_download_loop(posts, query)
+#         except Exception as e:
+#             context.bot.send_message(chat_id=update.message.chat_id, text="<b>ERROR</b>\n"+str(
+#                 e), parse_mode=telegram.ParseMode.HTML)
+#             return
 
-        src_dir = query
+#         src_dir = query
 
-        for vidfile in glob.iglob(os.path.join(src_dir, "*.mp4")):
-            context.bot.send_video(
-                chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
+#         for vidfile in glob.iglob(os.path.join(src_dir, "*.mp4")):
+#             context.bot.send_video(
+#                 chat_id=update.message.chat_id, video=open(vidfile, 'rb'))
 
-        bot.send_message(
-            text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
+#         bot.send_message(
+#             text="Thanks for using @xIGDLBot\nPlease /donate to keep this service alive!", chat_id=update.message.chat_id)
 
-        try:
-            shutil.rmtree(query)
-        except Exception:
-            pass
+#         try:
+#             shutil.rmtree(query)
+#         except Exception:
+#             pass
 
 
 def feed(update, context):
@@ -266,7 +266,7 @@ def main():
     dp.add_handler(CommandHandler("help", help, run_async=True))
     dp.add_handler(CommandHandler("stories", stories, run_async=True))
     dp.add_handler(CommandHandler("about", about, run_async=True))
-    dp.add_handler(CommandHandler("igtv", igtv, run_async=True))
+#     dp.add_handler(CommandHandler("igtv", igtv, run_async=True))
     dp.add_handler(CommandHandler("feed", feed, run_async=True))
     dp.add_handler(CommandHandler("donate", donate, run_async=True))
 
