@@ -1,0 +1,11 @@
+---
+application:
+  name: "instadl"
+  project: "Instadl"
+  organization: "QoveryCommunity"
+routers:
+- name: "main-instadl"
+  routes:
+  - application_name: "instadl"
+    paths:
+    - "/*"
